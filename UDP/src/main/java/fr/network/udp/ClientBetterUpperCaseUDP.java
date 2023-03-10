@@ -35,7 +35,11 @@ public class ClientBetterUpperCaseUDP {
 		var buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
 		buffer.putInt(charsetName.length());
 		buffer.compact();
+		buffer.put(ASCII_CHARSET.encode(charsetName));
+		buffer.compact();
+		buffer.put(Charset.forName(charsetName).encode(msg));
 
+		return Optional.of(buffer);
 	}
 
 	/**
@@ -51,8 +55,7 @@ public class ClientBetterUpperCaseUDP {
 	 * @return an Optional containing the String represented by buffer, or an empty Optional if the buffer cannot be decoded
 	 */
 	public static Optional<String> decodeMessage(ByteBuffer buffer) {
-		return null;
-		// TODO
+
 	}
 
 	public static void usage() {
