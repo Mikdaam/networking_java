@@ -33,12 +33,14 @@ public class ClientBetterUpperCaseUDP {
 	 */
 	public static Optional<ByteBuffer> encodeMessage(String msg, String charsetName) {
 		var buffer = ByteBuffer.allocate(MAX_PACKET_SIZE);
-		buffer.putInt(charsetName.length());
-		buffer.compact();
-		buffer.put(ASCII_CHARSET.encode(charsetName));
-		buffer.compact();
-		buffer.put(Charset.forName(charsetName).encode(msg));
-
+		var charsetBytes = ASCII_CHARSET.encode(charsetName);
+		buffer.putInt(charsetBytes.remaining()); // size of the charsetName in ASCII
+		buffer.put(charsetBytes); // encoded charsetNames
+		var encodedMsgByte = Charset.forName(charsetName).encode(msg);
+		if (encodedMsgByte.remaining() > buffer.remaining()) {
+			return Optional.empty();
+		}
+		buffer.put(encodedMsgByte); // put the msg in the charset
 		return Optional.of(buffer);
 	}
 
@@ -55,7 +57,26 @@ public class ClientBetterUpperCaseUDP {
 	 * @return an Optional containing the String represented by buffer, or an empty Optional if the buffer cannot be decoded
 	 */
 	public static Optional<String> decodeMessage(ByteBuffer buffer) {
+		buffer.flip();
+		if (buffer.remaining() < 4) {
+			return Optional.empty();
+		}
+		var charsetSize = buffer.getInt(); // number of byte of charset in ASCII
 
+		if (charsetSize < 0 || charsetSize > buffer.remaining()) {
+			return Optional.empty();
+		}
+		var charsetBuffer = buffer.slice(4, charsetSize); // byte of charset
+
+		var charsetName = ASCII_CHARSET.decode(charsetBuffer).toString();
+		if (!Charset.isSupported(charsetName)) {
+			return Optional.empty();
+		}
+		var charset = Charset.forName(charsetName); // create the charset from bytes
+		buffer.position(charsetSize + 4);
+		var msg = charset.decode(buffer); // msg decode with the charset
+
+		return Optional.of(msg.toString());
 	}
 
 	public static void usage() {
