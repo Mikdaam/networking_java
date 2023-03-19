@@ -49,6 +49,7 @@ public class ClientIdUpperCaseUDPOneByOne {
 	}
 
 	private Response decode(ByteBuffer bb) {
+		bb.flip();
 		var id = bb.getLong();
 		var msg = UTF8.decode(bb).toString();
 		return new Response(id, msg);
@@ -60,7 +61,6 @@ public class ClientIdUpperCaseUDPOneByOne {
 			while (true) {
 				respBuff.clear();
 				dc.receive(respBuff);
-				respBuff.flip();
 				queue.put(decode(respBuff));
 			}
 		} catch (InterruptedException e) {
