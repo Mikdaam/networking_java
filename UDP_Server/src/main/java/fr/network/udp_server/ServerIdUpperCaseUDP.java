@@ -43,7 +43,10 @@ public class ServerIdUpperCaseUDP {
                 logger.info("Id: " + id);
                 logger.info("Msg(Up): " + upperCaseMsg);
                 // 4) create packet with id, upperCaseMsg in UTF-8
-                buffer.clear().putLong(id).put(UTF8.encode(upperCaseMsg)).flip();
+                buffer.clear()
+                        .putLong(id)
+                        .put(UTF8.encode(upperCaseMsg))
+                        .flip();
                 // 5) send the packet to client
                 dc.send(buffer, clientAdr);
             }
