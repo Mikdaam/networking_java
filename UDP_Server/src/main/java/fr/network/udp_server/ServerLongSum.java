@@ -1,8 +1,6 @@
 package fr.network.udp_server;
 
-import java.nio.channels.AsynchronousCloseException;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.net.BindException;
@@ -14,15 +12,24 @@ public class ServerLongSum {
 
     private static final Logger logger = Logger.getLogger(ServerIdUpperCaseUDP.class.getName());
     private static final int BUFFER_SIZE = 1024;
-    private static final int MINIMUM_BYTE = Long.BYTES * 4 + 1;
+    private static final int MINIMUM_BYTE = Long.BYTES + 1;
     private static final int RESPONSE_BUF_SIZE = Long.BYTES * 2 + 1;
+    private static final long TIMEOUT = 60 * 1_000 * 5;
     private record Request(long sessionId, long idPosOperand, long totalOperand, long opValue) {}
-    private record Acknowledge(long sessionId, long idPosOperand) {
+    private record Ack(long sessionId, long idPosOperand) {
         public ByteBuffer encode() {
             var buffer = ByteBuffer.allocate(RESPONSE_BUF_SIZE);
             buffer.put((byte) 2)
                     .putLong(sessionId)
                     .putLong(idPosOperand);
+            return buffer.flip();
+        }
+    }
+    private record AckClean(long sessionId) {
+        public ByteBuffer encode() {
+            var buffer = ByteBuffer.allocate(RESPONSE_BUF_SIZE);
+            buffer.put((byte) 5)
+                    .putLong(sessionId);
             return buffer.flip();
         }
     }
@@ -65,6 +72,7 @@ public class ServerLongSum {
     private final DatagramChannel dc;
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private final HashMap<InetSocketAddress, HashMap<Long, Sum>> clientOps = new HashMap<>();
+    private final HashMap<Long, Long> lastUpdatedSession = new HashMap<>();
 
     public ServerLongSum(int port) throws IOException {
         dc = DatagramChannel.open();
@@ -72,46 +80,55 @@ public class ServerLongSum {
         logger.info("ServerLongSum started on port " + port);
     }
 
-    private Optional<Request> decode(ByteBuffer buffer) {
-        buffer.flip();
-        if (buffer.remaining() < MINIMUM_BYTE || buffer.get() != 1) {
-            logger.info("Packet malformed");
-            return Optional.empty();
-        }
-        return Optional.of(new Request(buffer.getLong(), buffer.getLong(), buffer.getLong(), buffer.getLong()));
-    }
-
     public void serve() throws IOException {
         try {
             while (!Thread.interrupted()) {
                 buffer.clear();
                 var clientAddress = (InetSocketAddress) dc.receive(buffer);
-                var decodeRes = decode(buffer);
+                buffer.flip();
 
-                decodeRes.ifPresentOrElse(
-                        (req) -> {
-                            try {
-                                // Send acknowledge
-                                dc.send(new Acknowledge(req.sessionId, req.idPosOperand).encode(), clientAddress);
+                if (buffer.remaining() < MINIMUM_BYTE) {
+                    logger.info("Packet malformed");
+                    continue;
+                }
+                var packetType = buffer.get();
 
-                                // Compute the sum
-                                var clientMap = clientOps.computeIfAbsent(clientAddress, k -> new HashMap<>());
-                                var clientSum = clientMap.computeIfAbsent(req.sessionId, id -> new Sum(req.totalOperand));
-                                clientSum.addOperand(req.idPosOperand, req.opValue);
+                var clientMap = clientOps.computeIfAbsent(clientAddress, k -> new HashMap<>());
+                switch (packetType) {
+                    case 1 -> {
+                        var req = new Request(buffer.getLong(), buffer.getLong(), buffer.getLong(), buffer.getLong());
+                        // Send acknowledge
+                        dc.send(new Ack(req.sessionId, req.idPosOperand).encode(), clientAddress);
 
-                                // Send the result if we received all operands
-                                if (clientSum.isComplete()) {
-                                    dc.send(new Result(req.sessionId, clientSum.result()).encode(), clientAddress);
-                                }
-                            }catch (AsynchronousCloseException e) {
-                                logger.info("Datagram close");
-                            } catch (IOException e) {
-                                logger.log(Level.SEVERE, e.getMessage());
-                                throw new AssertionError(e);
-                            }
-                        },
-                        () -> logger.info("Error because of malformed packet")
-                );
+                        // Compute the sum
+                        var clientSum = clientMap.computeIfAbsent(req.sessionId, id -> new Sum(req.totalOperand));
+                        clientSum.addOperand(req.idPosOperand, req.opValue);
+
+                        // Save the session
+                        lastUpdatedSession.put(req.sessionId, System.currentTimeMillis());
+
+                        // Send the result if we received all operands
+                        if (clientSum.isComplete()) {
+                            dc.send(new Result(req.sessionId, clientSum.result()).encode(), clientAddress);
+                        }
+                    }
+                    case 4 -> {
+                        var sessionId = buffer.getLong();
+                        // Send acknowledge
+                        dc.send(new AckClean(sessionId).encode(), clientAddress);
+
+                        // Release the resource (!A voir avec le prof)
+                        clientMap.remove(sessionId);
+                        //var clientMap = clientOps.getOrDefault(clientAddress, null);
+                    }
+                    default -> logger.info("Unexpected type packet,");
+                }
+
+                lastUpdatedSession.forEach((id, lastUpdate) -> {
+                    if ((System.currentTimeMillis() - lastUpdate) > TIMEOUT) {
+                        clientMap.remove(id);
+                    }
+                });
             }
         } finally {
             dc.close();
