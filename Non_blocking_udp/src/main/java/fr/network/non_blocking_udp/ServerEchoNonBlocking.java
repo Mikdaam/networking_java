@@ -59,22 +59,22 @@ public class ServerEchoNonBlocking {
 
     private void doRead(SelectionKey key) throws IOException {
         // TODO
-        var chan = (DatagramChannel) key.channel();
-        sender = chan.receive(buffer);
-        if (sender != null) {
-            buffer.flip();
-            key.interestOps(SelectionKey.OP_WRITE);
+        buffer.clear(); // Always put the clear before receive
+        sender = dc.receive(buffer);
+        if (sender == null) {
+            return; // In case there is an error
         }
+        buffer.flip();
+        key.interestOps(SelectionKey.OP_WRITE);
     }
 
     private void doWrite(SelectionKey key) throws IOException {
         // TODO
-        var chan = (DatagramChannel) key.channel();
-        chan.send(buffer, sender);
-        if (!buffer.hasRemaining()) {
-            buffer.clear();
-            key.interestOps(SelectionKey.OP_READ);
+        dc.send(buffer, sender);
+        if (buffer.hasRemaining()) { // ! Never put important code in if statement
+            return;
         }
+        key.interestOps(SelectionKey.OP_READ);
     }
 
     public static void usage() {
