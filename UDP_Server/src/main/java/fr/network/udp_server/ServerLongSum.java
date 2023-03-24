@@ -117,9 +117,8 @@ public class ServerLongSum {
                         // Send acknowledge
                         dc.send(new AckClean(sessionId).encode(), clientAddress);
 
-                        // Release the resource (!A voir avec le prof)
+                        // Release the resource
                         clientMap.remove(sessionId);
-                        //var clientMap = clientOps.getOrDefault(clientAddress, null);
                     }
                     default -> logger.info("Unexpected type packet,");
                 }
