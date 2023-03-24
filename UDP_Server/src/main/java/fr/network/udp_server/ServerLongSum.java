@@ -131,6 +131,8 @@ public class ServerLongSum {
                 });
             }
         } finally {
+            lastUpdatedSession.clear();
+            clientOps.clear();
             dc.close();
         }
     }
