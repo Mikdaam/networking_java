@@ -60,31 +60,32 @@ public class ServerEchoPlusNonBlocking {
 
     private void doRead(SelectionKey key) throws IOException {
         // TODO
-        var chan = (DatagramChannel) key.channel();
         var tempBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
+        buffer.clear();
         // receive the packet
-        sender = chan.receive(tempBuffer);
-        if (sender != null) {
-            tempBuffer.flip();
-            // convert the packet
-            while (tempBuffer.hasRemaining()) {
-                var res = tempBuffer.get();
-                buffer.put((byte) (res + MODULO));
-            }
-            buffer.flip();
-            key.interestOps(SelectionKey.OP_WRITE);
+        sender = dc.receive(tempBuffer);
+        tempBuffer.flip();
+        if (sender == null) {
+            return; // In case there is an error
         }
+        // convert the packet
+        while (tempBuffer.hasRemaining()) {
+            var res = tempBuffer.get();
+            buffer.put((byte) (res + MODULO));
+        }
+        buffer.flip();
+        key.interestOps(SelectionKey.OP_WRITE);
     }
 
     private void doWrite(SelectionKey key) throws IOException {
         // TODO
-        var chan = (DatagramChannel) key.channel();
         // Send the packet back
-        chan.send(buffer, sender);
-        if (!buffer.hasRemaining()) {
-            buffer.clear();
-            key.interestOps(SelectionKey.OP_READ);
+        dc.send(buffer, sender);
+        if (buffer.hasRemaining()) { // ! Never put important code in if statement
+            return;
         }
+        buffer.clear();
+        key.interestOps(SelectionKey.OP_READ);
     }
 
     public static void usage() {
