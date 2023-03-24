@@ -28,11 +28,11 @@ public class ServerEchoNonBlocking {
         dc.bind(new InetSocketAddress(port));
         // TODO set dc in non-blocking mode and register it to the selector
         dc.configureBlocking(false);
-        dc.register(selector, SelectionKey.OP_READ|SelectionKey.OP_WRITE);
+        dc.register(selector, SelectionKey.OP_READ);
     }
 
     public void serve() throws IOException {
-        logger.info("ServerEchoNonBlocking started on port " + port);
+        logger.info("ServerEchoPlusNonBlocking started on port " + port);
         while (!Thread.interrupted()) {
             try {
                 selector.select(this::treatKey);
@@ -52,34 +52,28 @@ public class ServerEchoNonBlocking {
             }
         } catch (IOException e) {
             // TODO
-            logger.log(Level.SEVERE, "Severe IO problem, ", e);
+            throw new UncheckedIOException(e);
         }
 
     }
 
     private void doRead(SelectionKey key) throws IOException {
         // TODO
-        System.out.println("The key is: " + key);
         var chan = (DatagramChannel) key.channel();
-        System.out.println("The chan is: " + chan);
-        var sender = chan.receive(buffer);
-        if (sender == null) {
-            selector.select();
-        } else {
+        sender = chan.receive(buffer);
+        if (sender != null) {
             buffer.flip();
+            key.interestOps(SelectionKey.OP_WRITE);
         }
     }
 
     private void doWrite(SelectionKey key) throws IOException {
         // TODO
-        System.out.println("The key is: " + key);
         var chan = (DatagramChannel) key.channel();
-        System.out.println("The chan is: " + chan);
         chan.send(buffer, sender);
-        if (buffer.hasRemaining()) {
-            selector.select();
-        } else {
+        if (!buffer.hasRemaining()) {
             buffer.clear();
+            key.interestOps(SelectionKey.OP_READ);
         }
     }
 
