@@ -191,7 +191,6 @@ public class ClientIdUpperCaseUDPOneByOne {
                     upperCaseLines.add(packet.line);
 
                     currentId++;
-                    state = State.SENDING;
                     if (currentId >= lines.size()) {
                         state = State.FINISHED;
                     }
