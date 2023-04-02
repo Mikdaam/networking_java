@@ -38,6 +38,7 @@ public class ClientIdUpperCaseUDPBurst {
 
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
     private State state;
+    private int currentId = 0;
     private long lastSend;
     private final BitSet packetState;
 
@@ -151,7 +152,7 @@ public class ClientIdUpperCaseUDPBurst {
     private long updateInterestOps() {
         if (state == State.SENDING) {
             uniqueKey.interestOps(SelectionKey.OP_WRITE);
-            return timeout;
+            return 0;
         } else if (state == State.RECEIVING) {
             var time = System.currentTimeMillis() - lastSend;
             if (time > timeout) {
@@ -190,7 +191,6 @@ public class ClientIdUpperCaseUDPBurst {
                     packetState.set(id);
                     upperCaseLines[id] = packet.line;
 
-                    state = State.SENDING;
                     if (packetState.cardinality() == nbLines) {
                         state = State.FINISHED;
                     }
@@ -206,17 +206,22 @@ public class ClientIdUpperCaseUDPBurst {
      */
 
     private void doWrite() throws IOException {
-        if (packetState.get(i)) { //  When a line is already received (Never put important code in if)
-            continue;
+        if (packetState.get(currentId)) { //  When a line is already received (Never put important code in if)
+            currentId = packetState.nextClearBit(currentId);
+            return;
         }
 
-        new Packet(i, lines.get(i)).encode(buffer);
+        new Packet(currentId, lines.get(currentId)).encode(buffer);
         dc.send(buffer, serverAddress);
         if (buffer.hasRemaining()) {
             logger.info("Packet not sent, so resent after timeout");
             return;
         }
-        //state = State.RECEIVING;
         lastSend = System.currentTimeMillis();
+        currentId = packetState.nextClearBit(currentId + 1);
+
+        if (currentId >= nbLines) {
+            state = State.RECEIVING;
+        }
     }
 }
