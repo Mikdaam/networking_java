@@ -156,6 +156,7 @@ public class ClientIdUpperCaseUDPBurst {
         } else if (state == State.RECEIVING) {
             var time = System.currentTimeMillis() - lastSend;
             if (time > timeout) {
+                currentId = 0;
                 state = State.SENDING;
                 uniqueKey.interestOps(SelectionKey.OP_WRITE);
                 return 0;
@@ -217,10 +218,10 @@ public class ClientIdUpperCaseUDPBurst {
             logger.info("Packet not sent, so resent after timeout");
             return;
         }
-        lastSend = System.currentTimeMillis();
         currentId = packetState.nextClearBit(currentId + 1);
 
         if (currentId >= nbLines) {
+            lastSend = System.currentTimeMillis();
             state = State.RECEIVING;
         }
     }
