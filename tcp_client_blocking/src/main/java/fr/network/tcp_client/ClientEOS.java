@@ -38,10 +38,12 @@ public class ClientEOS {
         channel.shutdownOutput();
 
         var responseBuffer = ByteBuffer.allocate(bufferSize);
-        int read = channel.read(responseBuffer);
-        if (read == - 1) {
-            logger.warning("Connection closed, That's weird");
-            return "null";
+        // !NOTE : about read ...
+        while (responseBuffer.hasRemaining()) {
+            if (channel.read(responseBuffer) == - 1) {
+                logger.info("Connection closed, That's weird");
+                break;
+            }
         }
         responseBuffer.flip();
         return UTF8_CHARSET.decode(responseBuffer).toString();
@@ -67,23 +69,27 @@ public class ClientEOS {
         channel.write(UTF8_CHARSET.encode(request));
         channel.shutdownOutput();
 
+        // ! WARNING: Never decode UTF8 while reading.
+
         var responseBuffer = ByteBuffer.allocate(BUFFER_SIZE);
-        var builder = new StringBuilder();
+
         while (readFully(channel, responseBuffer)) {
-            responseBuffer.flip();
-            builder.append(UTF8_CHARSET.decode(responseBuffer));
-            responseBuffer.clear();
-        }
+            if (!responseBuffer.hasRemaining()) {
+                // flip the buffer
+                responseBuffer.flip();
 
-        return builder.toString();
+                // create the new buffer
+                var newBuf = ByteBuffer.allocate(responseBuffer.capacity() * 2);
 
-        /* int read = channel.read(responseBuffer);
-        if (read == - 1) {
-            logger.warning("Connection closed, That's weird");
-            return "null";
+                // put the old buffer in the new one
+                newBuf.put(responseBuffer);
+
+                // the old buffer is the new one
+                responseBuffer = newBuf;
+            }
         }
         responseBuffer.flip();
-        return UTF8_CHARSET.decode(responseBuffer).toString();*/
+        return UTF8_CHARSET.decode(responseBuffer).toString();
     }
 
     /**
@@ -100,7 +106,7 @@ public class ClientEOS {
 
     public static void main(String[] args) throws IOException {
         var google = new InetSocketAddress("www.google.fr", 80);
-        // System.out.println(getFixedSizeResponse("GET / HTTP/1.1\r\nHost: www.google.fr\r\n\r\n", google, 512));
+//         System.out.println(getFixedSizeResponse("GET / HTTP/1.1\r\nHost: www.google.fr\r\n\r\n", google, 512));
          System.out.println(getUnboundedResponse("GET / HTTP/1.1\r\nHost: www.google.fr\r\n\r\n", google));
     }
 }
