@@ -38,30 +38,12 @@ public class ClientEOS {
         channel.shutdownOutput();
 
         var responseBuffer = ByteBuffer.allocate(bufferSize);
-        // !NOTE : about read ...
-        while (responseBuffer.hasRemaining()) {
-            if (channel.read(responseBuffer) == - 1) {
-                logger.info("Connection closed, That's weird");
-                break;
-            }
+        if(!readFully(channel, responseBuffer)) {
+            logger.info("Connection closed, That's weird");
         }
         responseBuffer.flip();
         return UTF8_CHARSET.decode(responseBuffer).toString();
     }
-
-    /**
-     * This method: 
-     * - connect to server 
-     * - writes the bytes corresponding to request in UTF8 
-     * - closes the write-channel to the server 
-     * - reads and stores all bytes from server until read-channel is closed 
-     * - return the corresponding string in UTF8
-     *
-     * @param request The request sent to the server
-     * @param server The server address
-     * @return the UTF8 string corresponding the full response of the server
-     * @throws IOException when there is error
-     */
 
     private static void grow(ByteBuffer buffer) {
         // flip the buffer
@@ -77,6 +59,19 @@ public class ClientEOS {
         buffer = newBuf;
     }
 
+    /**
+     * This method: 
+     * - connect to server 
+     * - writes the bytes corresponding to request in UTF8 
+     * - closes the write-channel to the server 
+     * - reads and stores all bytes from server until read-channel is closed 
+     * - return the corresponding string in UTF8
+     *
+     * @param request The request sent to the server
+     * @param server The server address
+     * @return the UTF8 string corresponding the full response of the server
+     * @throws IOException when there is error
+     */
     public static String getUnboundedResponse(String request, SocketAddress server) throws IOException {
         var channel = SocketChannel.open();
         channel.connect(server);
@@ -105,7 +100,12 @@ public class ClientEOS {
      * @throws IOException
      */
     static boolean readFully(SocketChannel sc, ByteBuffer buffer) throws IOException {
-        return sc.read(buffer) != - 1;
+        while (buffer.hasRemaining()) {
+            if (sc.read(buffer) == -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static void main(String[] args) throws IOException {
