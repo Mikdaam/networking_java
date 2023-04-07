@@ -63,6 +63,20 @@ public class ClientEOS {
      * @throws IOException when there is error
      */
 
+    private static void grow(ByteBuffer buffer) {
+        // flip the buffer
+        buffer.flip();
+
+        // create the new buffer
+        var newBuf = ByteBuffer.allocate(buffer.capacity() * 2);
+
+        // put the old buffer in the new one
+        newBuf.put(buffer);
+
+        // the old buffer is the new one
+        buffer = newBuf;
+    }
+
     public static String getUnboundedResponse(String request, SocketAddress server) throws IOException {
         var channel = SocketChannel.open();
         channel.connect(server);
@@ -75,17 +89,7 @@ public class ClientEOS {
 
         while (readFully(channel, responseBuffer)) {
             if (!responseBuffer.hasRemaining()) {
-                // flip the buffer
-                responseBuffer.flip();
-
-                // create the new buffer
-                var newBuf = ByteBuffer.allocate(responseBuffer.capacity() * 2);
-
-                // put the old buffer in the new one
-                newBuf.put(responseBuffer);
-
-                // the old buffer is the new one
-                responseBuffer = newBuf;
+                grow(responseBuffer);
             }
         }
         responseBuffer.flip();
