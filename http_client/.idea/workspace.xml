@@ -4,11 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="37f0e18d-14a6-49bc-b11d-45ac5baeed17" name="Changes" comment="" />
+    <list default="true" id="37f0e18d-14a6-49bc-b11d-45ac5baeed17" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPHeader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/fr/network/http/FakeHTTPServer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/fr/network/http/HTTPReaderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProjectId" id="2O68adeffPRECIucI3qvo8I2fl3" />
   <component name="ProjectViewState">
@@ -21,11 +32,39 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "http-client",
+    "last_opened_file_path": "C:/Users/bmikd/OneDrive/Bureau/Nouveau_PC/ESIPE/Annee_2/S2/Network_Programming_Java/http_client",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "show.migrate.to.gradle.popup": "false",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration name="HTTPReaderTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="http_client" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.network.http.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.network.http" />
+      <option name="MAIN_CLASS_NAME" value="fr.network.http.HTTPReaderTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.HTTPReaderTest" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -35,6 +74,7 @@
       <option name="presentableId" value="Default" />
       <updated>1680869735887</updated>
       <workItem from="1680869737121" duration="145000" />
+      <workItem from="1680869957703" duration="5661000" />
     </task>
     <servers />
   </component>
