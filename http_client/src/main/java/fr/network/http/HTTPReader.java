@@ -29,7 +29,6 @@ public class HTTPReader {
     public String readLineCRLF() throws IOException {
         var builder = new StringBuilder();
         boolean hasCR = false;
-        int size = 0;
 
         buffer.flip();
         while (true) {
@@ -43,19 +42,16 @@ public class HTTPReader {
 
             char c = (char) buffer.get();
             builder.append(c);
-            size++;
-            if (c == '\r') {
-                hasCR = true;
-            }
 
             if (c == '\n' && hasCR) {
-                hasCR = false;
                 buffer.compact();
                 break;
             }
+
+            hasCR = c == '\r';
         }
 
-        builder.setLength(size - 2);
+        builder.setLength(builder.length() - 2);
         return builder.toString();
     }
 
