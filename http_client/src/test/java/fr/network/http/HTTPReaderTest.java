@@ -83,14 +83,14 @@ public class HTTPReaderTest {
      */
     @Test
     public void testLineReaderLFCR4() throws IOException {
-        FakeHTTPServer server = new FakeHTTPServer("Line1\r\nâ‚¬",10);
+        FakeHTTPServer server = new FakeHTTPServer("Line1\r\n€",10);
         server.serve();
         SocketChannel sc = SocketChannel.open();
         sc.connect(new InetSocketAddress("localhost", server.getPort()));
         ByteBuffer buff = ByteBuffer.allocate(12);
         HTTPReader reader = new HTTPReader(sc, buff);
         assertEquals("Line1", reader.readLineCRLF());
-        ByteBuffer buffFinal = ByteBuffer.wrap("â‚¬".getBytes("UTF8")).compact();
+        ByteBuffer buffFinal = ByteBuffer.wrap("€".getBytes("UTF8")).compact();
         // Checks that the content of the buffer is the bytes of euro in UTF8
         buffFinal.flip();
         buff.flip();
