@@ -29,51 +29,51 @@ public class ClientConcatenation {
         return true;
     }
 
-    /*private static void grow(ByteBuffer buffer) {
-        // flip the buffer
-        buffer.flip();
-
-        // create the new buffer
-        var newBuf = ByteBuffer.allocate(buffer.capacity() * 2);
-
-        // put the old buffer in the new one
-        newBuf.put(buffer);
-
-        // the old buffer is the new one
-        buffer = newBuf;
-    }*/
-
     private static String requestStringConcatenation(SocketChannel sc, List<String> list) throws IOException {
-        var buffer = ByteBuffer.allocate(BUFFER_SIZE);
-        var size = list.size();
+        var buffer = ByteBuffer.allocate(50);
+        var nbOfString = list.size();
 
         // Send a request to the server
         // send the size
-        buffer.putInt(size);
+        buffer.putInt(nbOfString);
         buffer.flip();
         sc.write(buffer);
         buffer.clear();
         // ====================================================
         for (var line : list) {
             var msgBytes = UTF8.encode(line);
-            buffer.putInt(msgBytes.remaining());
+            var msgSize = msgBytes.remaining();
+
+            if (Integer.BYTES + msgSize > buffer.remaining()) {
+                buffer.flip();
+                sc.write(buffer);
+                buffer.clear();
+            }
+
+            buffer.putInt(msgSize);
             buffer.put(msgBytes);
-            buffer.flip();
-            sc.write(buffer);
-            buffer.clear();
         }
+        // Send the rest
+        buffer.flip();
+        sc.write(buffer);
+        buffer.clear();
+
 
         // Receive a response from the server
-        buffer.limit(Integer.BYTES);
-        readFully(sc, buffer);
-        buffer.flip();
-        int concatenatedSize = buffer.getInt();
-        buffer.clear();
-        buffer.limit(concatenatedSize);
-        readFully(sc, buffer);
+        var responseBuf = ByteBuffer.allocate(BUFFER_SIZE);
+        // read the size
+        responseBuf.limit(Integer.BYTES);
+        readFully(sc, responseBuf);
+        responseBuf.flip();
+        int concatenatedSize = responseBuf.getInt();
+        responseBuf.clear();
 
-        buffer.flip();
-        return UTF8.decode(buffer).toString();
+        // read the strings
+        responseBuf.limit(concatenatedSize);
+        readFully(sc, responseBuf);
+        responseBuf.flip();
+
+        return UTF8.decode(responseBuf).toString();
     }
 
     public static void main(String[] args) throws IOException {
@@ -92,9 +92,11 @@ public class ClientConcatenation {
                 var line = scanner.nextLine();
 
                 if (line.equals("")) {
-                    var concatenatedMessage = requestStringConcatenation(sc, messages);
-                    messages.clear();
-                    System.out.println(concatenatedMessage);
+                    if (!messages.isEmpty()) {
+                        var concatenatedMessage = requestStringConcatenation(sc, messages);
+                        messages.clear();
+                        System.out.println(concatenatedMessage);
+                    }
                 } else {
                     messages.add(line);
                     System.out.println(line);
