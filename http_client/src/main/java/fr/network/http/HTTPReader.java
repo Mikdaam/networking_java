@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 
 public class HTTPReader {
 
@@ -61,8 +62,15 @@ public class HTTPReader {
      *                     could be read or if the header is ill-formed
      */
     public HTTPHeader readHeader() throws IOException {
-        // TODO
-        return null;
+        var responseStatus = readLineCRLF();
+        var emptyLine = "";
+        var fields = new HashMap<String, String>();
+        String line;
+        while (!(line = readLineCRLF()).equals(emptyLine)) {
+            var cols = line.split(": ");
+            fields.put(cols[0], cols[1]);
+        }
+        return HTTPHeader.create(responseStatus, fields);
     }
 
     /**
@@ -76,8 +84,16 @@ public class HTTPReader {
      *                     bytes could be read
      */
     public ByteBuffer readBytes(int size) throws IOException {
-        // TODO
-        return null;
+        //var readBuffer = ByteBuffer.allocate(size);
+        /*System.out.println("before" + buffer);
+        buffer.limit(size);
+        System.out.println("after" + buffer);*/
+        while (buffer.hasRemaining()) {
+            if (sc.read(buffer) == -1) {
+                break;
+            }
+        }
+        return buffer.compact();
     }
 
     /**

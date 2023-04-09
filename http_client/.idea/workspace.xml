@@ -7,7 +7,6 @@
     <list default="true" id="37f0e18d-14a6-49bc-b11d-45ac5baeed17" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/network/http/HTTPReaderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/network/http/HTTPReaderTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +38,20 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
+  <component name="RunManager" selected="JUnit.HTTPReaderTest">
+    <configuration name="HTTPReader" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fr.network.http.HTTPReader" />
+      <module name="http_client" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.network.http.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="HTTPReaderTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="http_client" />
       <extension name="coverage">
@@ -58,6 +70,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="JUnit.HTTPReaderTest" />
+        <item itemvalue="Application.HTTPReader" />
       </list>
     </recent_temporary>
   </component>
@@ -71,7 +84,8 @@
       <updated>1680869735887</updated>
       <workItem from="1680869737121" duration="145000" />
       <workItem from="1680869957703" duration="5661000" />
-      <workItem from="1680968803764" duration="1157000" />
+      <workItem from="1680968803764" duration="5124000" />
+      <workItem from="1681034137672" duration="959000" />
     </task>
     <servers />
   </component>
