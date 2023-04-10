@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37f0e18d-14a6-49bc-b11d-45ac5baeed17" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" afterDir="false" />
     </list>
@@ -13,8 +14,22 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
   </component>
   <component name="ProjectId" id="2O68adeffPRECIucI3qvo8I2fl3" />
   <component name="ProjectViewState">
@@ -38,7 +53,21 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager" selected="JUnit.HTTPReaderTest">
+  <component name="RunManager" selected="Application.HTTPReader">
+    <configuration name="HTTPClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fr.network.http.HTTPClient" />
+      <module name="http_client" />
+      <option name="PROGRAM_PARAMETERS" value="igm.univ-mlv.fr /coursprogreseau/" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.network.http.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="HTTPReader" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="fr.network.http.HTTPReader" />
       <module name="http_client" />
@@ -67,10 +96,16 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.HTTPClient" />
+      <item itemvalue="Application.HTTPReader" />
+      <item itemvalue="JUnit.HTTPReaderTest" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.HTTPReaderTest" />
         <item itemvalue="Application.HTTPReader" />
+        <item itemvalue="JUnit.HTTPReaderTest" />
+        <item itemvalue="Application.HTTPClient" />
       </list>
     </recent_temporary>
   </component>
@@ -86,6 +121,7 @@
       <workItem from="1680869957703" duration="5661000" />
       <workItem from="1680968803764" duration="5124000" />
       <workItem from="1681034137672" duration="959000" />
+      <workItem from="1681115201118" duration="14567000" />
     </task>
     <servers />
   </component>

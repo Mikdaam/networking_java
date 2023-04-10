@@ -10,6 +10,7 @@ import java.util.HashMap;
 public class HTTPReader {
 
     private final Charset ASCII_CHARSET = Charset.forName("ASCII");
+    private final int BUF_SIZE = 1024;
     private final SocketChannel sc;
     private final ByteBuffer buffer;
 
@@ -84,16 +85,30 @@ public class HTTPReader {
      *                     bytes could be read
      */
     public ByteBuffer readBytes(int size) throws IOException {
-        //var readBuffer = ByteBuffer.allocate(size);
-        /*System.out.println("before" + buffer);
-        buffer.limit(size);
-        System.out.println("after" + buffer);*/
-        while (buffer.hasRemaining()) {
-            if (sc.read(buffer) == -1) {
-                break;
+        var readBuffer = ByteBuffer.allocate(size);
+
+        buffer.flip();
+        if (buffer.hasRemaining()) {
+            while (buffer.hasRemaining() && readBuffer.hasRemaining()) {
+                readBuffer.put(buffer.get());
+            }
+            buffer.compact();
+        }
+
+        while (readBuffer.hasRemaining()) {
+            if (sc.read(readBuffer) == -1) {
+                throw new HTTPException("Connection is closed before read.");
             }
         }
-        return buffer.compact();
+
+        return readBuffer;
+    }
+
+    private ByteBuffer grow(ByteBuffer oldBuf) {
+        var newBuf = ByteBuffer.allocate(oldBuf.capacity() * 2);
+        oldBuf.flip();
+        newBuf.put(oldBuf);
+        return newBuf;
     }
 
     /**
@@ -103,8 +118,27 @@ public class HTTPReader {
      */
 
     public ByteBuffer readChunks() throws IOException {
-        // TODO
-        return null;
+        var chunksBuf = ByteBuffer.allocate(BUF_SIZE);
+
+        // read a chunk
+        // read the bytes size
+        int size;
+        while ((size = Integer.parseInt(readLineCRLF(), 16)) != 0) {
+
+            // grow the main buffer
+            if (!chunksBuf.hasRemaining()) {
+                chunksBuf = grow(chunksBuf);
+            }
+
+            var chunkBuf = ByteBuffer.allocate(size);
+            // read the chunk data
+            while (chunkBuf.hasRemaining()) {
+                chunkBuf.put(ByteBuffer.wrap(readLineCRLF().getBytes(ASCII_CHARSET)));
+            }
+
+            chunksBuf.put(chunkBuf);
+        }
+        return chunksBuf;
     }
 
     public static void main(String[] args) throws IOException {
