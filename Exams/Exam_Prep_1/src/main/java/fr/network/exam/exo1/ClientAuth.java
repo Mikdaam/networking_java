@@ -1,4 +1,4 @@
-package fr.network.exam;
+package fr.network.exam.exo1;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,7 +22,7 @@ public class ClientAuth {
     private static final Charset ISO_8859 = StandardCharsets.ISO_8859_1;
     private static final Logger logger = Logger.getLogger(ClientAuth.class.getName());
     private static final int BUF_SIZE = 1024;
-    private static final int MIN_BUF = 8 + 4 * 2;
+    private static final int MIN_BUF = Long.BYTES + Integer.BYTES * 2;
 
     private record User(String firstName, String lastName) {
         public User {
@@ -43,6 +43,7 @@ public class ClientAuth {
             var firstNameBuf = UTF8.encode(firstName);
             var lastNameBuf = UTF8.encode(lastName);
 
+            // id
             buf.putLong(id);
             // firstname
             buf.putInt(firstNameBuf.remaining());
@@ -81,12 +82,55 @@ public class ClientAuth {
             // List of lines to write to the output file
             var answers = new ArrayList<String>();
 
-            // TODO
             for (int i = 0; i < users.size(); i++) {
-                dc.send(users.get(i).encode(i), server);
+                // send request to server
+                dc.send(users.get(i).encode(i).flip(), server);
             }
 
+            var parts = new String[4];
+            var buf = ByteBuffer.allocate(BUF_SIZE);
+            // receive the response from the server
+            for (var user : users) {
+                parts[0] = user.firstName;
+                parts[1] = user.lastName;
+                buf.clear();
+                dc.receive(buf);
+                buf.flip();
+                if (buf.remaining() < MIN_BUF) {
+                    logger.warning("Mal formed packet from the server");
+                    System.out.println("min size");
+                    continue;
+                }
 
+                // get id
+                long id = buf.getLong();
+
+                // get username
+                int usernameByteSize = buf.getInt();
+                if (buf.remaining() < usernameByteSize || usernameByteSize < 0) {
+                    logger.warning("Mal formed packet from the server");
+                    continue;
+                }
+                var usernameBytes = buf.slice(buf.position(), usernameByteSize);
+                buf.position(buf.position() + usernameByteSize);
+                var username = ISO_8859.decode(usernameBytes).toString();
+                parts[2] = username;
+
+                // get password
+                int passwordByteSize = buf.getInt();
+                if (buf.remaining() < passwordByteSize || passwordByteSize < 0) {
+                    logger.warning("Mal formed packet from the server");
+                    continue;
+                }
+                var passwordBytes = buf.slice(buf.position(), passwordByteSize);
+                buf.position(buf.position() + passwordByteSize);
+                var password = ISO_8859.decode(passwordBytes).toString();
+                parts[3] = password;
+
+                // build response
+                var res = String.join(";", parts);
+                answers.add(res);
+            }
 
             Files.write(Paths.get(outFilename), answers, UTF8, CREATE, WRITE, TRUNCATE_EXISTING);
         } finally {
