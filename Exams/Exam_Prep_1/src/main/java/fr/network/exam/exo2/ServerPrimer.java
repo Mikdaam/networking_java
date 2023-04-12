@@ -5,17 +5,17 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.logging.Logger;
 
 public class ServerPrimer {
     private final DatagramChannel dc;
-
+    private final HashMap<InetSocketAddress, HashSet<Long>> data = new HashMap<>();
+    private final HashSet<Long> primeNumbers = new HashSet<>();
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(Long.BYTES * 3);
-    private final HashMap<InetSocketAddress, ArrayList<Long>> clientData = new HashMap<>();
-    private final HashSet<Long> primes = new HashSet<>();
+
+    private static final Logger logger = Logger.getLogger(ServerPrimer.class.getName());
 
     public ServerPrimer(int port) throws IOException {
         dc = DatagramChannel.open();
@@ -36,41 +36,41 @@ public class ServerPrimer {
     public void serve() throws IOException {
         try {
             while (!Thread.interrupted()) {
-                buffer.clear();
-                // receive a request
+                buffer.clear(); // clearing buffer
                 var client = (InetSocketAddress) dc.receive(buffer);
                 buffer.flip();
 
-                // verification
                 if (buffer.remaining() < Long.BYTES) {
-                    System.out.println("Malformed packet");
+                    logger.warning("Mal formed packet");
                     continue;
                 }
-
-                // get number
                 long number = buffer.getLong();
                 if (number < 0) {
-                    System.out.println("Number less than 0");
+                    logger.warning("Not a positive number");
                     continue;
                 }
+                buffer.clear();
 
-                var clientPrimes = clientData.computeIfAbsent(client, k -> new ArrayList<>());
+                var clientNumbers = data.computeIfAbsent(client, __ -> new HashSet<>());
                 if (isPrime(number)) {
-                    clientPrimes.add(number);
-                    primes.add(number);
+                    clientNumbers.add(number);
+                    primeNumbers.add(number);
                 }
 
-                // send a response
-                buffer.clear();
-                buffer.putLong(number);
-                long clientAvg = (long) clientPrimes.stream().mapToLong(Long::longValue).average().orElse(0);
-                buffer.putLong(clientAvg);
-                long avg = (long) primes.stream().mapToLong(Long::longValue).average().orElse(0);
-                buffer.putLong(avg);
+                long clientAvg = (long) clientNumbers.stream().mapToLong(Long::longValue).average().orElse(0);
+                long avg = (long) primeNumbers.stream().mapToLong(Long::longValue).average().orElse(0);
+
+                buffer.putLong(number); // put the number
+                buffer.putLong(clientAvg); // put the client avg
+                buffer.putLong(avg); // put the total avg
+
                 buffer.flip();
-                dc.send(buffer, client);
+
+                dc.send(buffer, client); // send response to the client
             }
         } finally {
+            data.clear();
+            primeNumbers.clear();
             dc.close();
         }
     }
@@ -85,7 +85,7 @@ public class ServerPrimer {
             return;
         }
         ServerPrimer server;
-        int port = Integer.valueOf(args[0]);
+        int port = Integer.parseInt(args[0]);
         if (!(port >= 1024) & port <= 65535) {
             System.out.println("The port number must be between 1024 and 65535");
             return;

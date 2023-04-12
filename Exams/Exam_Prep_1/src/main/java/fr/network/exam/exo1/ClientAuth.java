@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static java.nio.file.StandardOpenOption.*;
 
@@ -21,7 +20,8 @@ public class ClientAuth {
     private static final Charset UTF8 = StandardCharsets.UTF_8;
     private static final Charset ISO_8859 = StandardCharsets.ISO_8859_1;
     private static final Logger logger = Logger.getLogger(ClientAuth.class.getName());
-    private static final int BUF_SIZE = 1024;
+
+    private static final ByteBuffer buffer = ByteBuffer.allocate(1024);
     private static final int MIN_BUF = Long.BYTES + Integer.BYTES * 2;
 
     private record User(String firstName, String lastName) {
@@ -36,23 +36,6 @@ public class ClientAuth {
                 throw new IllegalArgumentException("Invalid line : " + line);
             }
             return new User(t[0], t[1]);
-        }
-
-        public ByteBuffer encode(long id) {
-            var buf = ByteBuffer.allocate(BUF_SIZE);
-            var firstNameBuf = UTF8.encode(firstName);
-            var lastNameBuf = UTF8.encode(lastName);
-
-            // id
-            buf.putLong(id);
-            // firstname
-            buf.putInt(firstNameBuf.remaining());
-            buf.put(firstNameBuf);
-            // lastName
-            buf.putInt(lastNameBuf.remaining());
-            buf.put(lastNameBuf);
-
-            return buf;
         }
     }
 
@@ -73,63 +56,64 @@ public class ClientAuth {
         dc.bind(null);
     }
 
-    public void launch() throws IOException, InterruptedException {
+    public void launch() throws IOException {
         try {
             // Read all lines of inFilename opened in UTF-8
             var lines = Files.readAllLines(Path.of(inFilename), UTF8);
             // Create the list of all users
-            var users = lines.stream().map(User::fromLine).collect(Collectors.toList());
+            var users = lines.stream().map(User::fromLine).toList();
             // List of lines to write to the output file
             var answers = new ArrayList<String>();
 
-            for (int i = 0; i < users.size(); i++) {
-                // send request to server
-                dc.send(users.get(i).encode(i).flip(), server);
+            // Send request
+            for (int id = 0; id < users.size(); id++) {
+                var user = users.get(id);
+                var firstnameBytes = UTF8.encode(user.firstName);
+                var lastnameBytes = UTF8.encode(user.lastName);
+
+                buffer.clear(); // clearing the buffer
+
+                buffer.putLong(id); // id
+                buffer.putInt(firstnameBytes.remaining()); // size of firstname bytes
+                buffer.put(firstnameBytes); // firstname bytes
+                buffer.putInt(lastnameBytes.remaining()); // size of lastname bytes
+                buffer.put(lastnameBytes); // lastname bytes
+                buffer.flip();
+
+                dc.send(buffer, server);
             }
 
-            var parts = new String[4];
-            var buf = ByteBuffer.allocate(BUF_SIZE);
-            // receive the response from the server
+            // Receive response
             for (var user : users) {
-                parts[0] = user.firstName;
-                parts[1] = user.lastName;
-                buf.clear();
-                dc.receive(buf);
-                buf.flip();
-                if (buf.remaining() < MIN_BUF) {
-                    logger.warning("Mal formed packet from the server");
-                    System.out.println("min size");
+                buffer.clear();
+                dc.receive(buffer);
+
+                buffer.flip();
+                // size verification
+                if (buffer.remaining() < MIN_BUF) {
+                    logger.warning("Ill formed packet.");
                     continue;
                 }
-
-                // get id
-                long id = buf.getLong();
-
-                // get username
-                int usernameByteSize = buf.getInt();
-                if (buf.remaining() < usernameByteSize || usernameByteSize < 0) {
-                    logger.warning("Mal formed packet from the server");
+                buffer.getLong(); // get id
+                int usernameSize = buffer.getInt(); // username Bytes size
+                if (buffer.remaining() < usernameSize) {
+                    logger.warning("Mal formed packet");
                     continue;
                 }
-                var usernameBytes = buf.slice(buf.position(), usernameByteSize);
-                buf.position(buf.position() + usernameByteSize);
-                var username = ISO_8859.decode(usernameBytes).toString();
-                parts[2] = username;
-
-                // get password
-                int passwordByteSize = buf.getInt();
-                if (buf.remaining() < passwordByteSize || passwordByteSize < 0) {
-                    logger.warning("Mal formed packet from the server");
+                var usernameBytes = buffer.slice(buffer.position(), usernameSize);
+                buffer.position(buffer.position() + usernameSize); // put the position in right place
+                // ============================
+                int passwdSize = buffer.getInt(); // passwd Bytes size
+                if (buffer.remaining() < passwdSize) {
+                    logger.warning("Mal formed packet");
                     continue;
                 }
-                var passwordBytes = buf.slice(buf.position(), passwordByteSize);
-                buf.position(buf.position() + passwordByteSize);
-                var password = ISO_8859.decode(passwordBytes).toString();
-                parts[3] = password;
+                var passwdBytes = buffer.slice(buffer.position(), passwdSize);
+                buffer.position(buffer.position() + passwdSize); // put the position in right place
+                // ================================
 
-                // build response
-                var res = String.join(";", parts);
-                answers.add(res);
+                var answer = String.format("%s;%s;%s;%s", user.firstName, user.lastName, ISO_8859.decode(usernameBytes), ISO_8859.decode(passwdBytes));
+                answers.add(answer);
             }
 
             Files.write(Paths.get(outFilename), answers, UTF8, CREATE, WRITE, TRUNCATE_EXISTING);
@@ -138,7 +122,7 @@ public class ClientAuth {
         }
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         if (args.length != 4) {
             usage();
             return;
