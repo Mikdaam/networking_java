@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class HTTPReader {
@@ -104,11 +105,11 @@ public class HTTPReader {
         return readBuffer;
     }
 
-    private ByteBuffer grow(ByteBuffer oldBuf) {
-        var newBuf = ByteBuffer.allocate(oldBuf.capacity() * 2);
-        oldBuf.flip();
-        newBuf.put(oldBuf);
-        return newBuf;
+    private ByteBuffer grow(ByteBuffer buffer, int size) {
+        buffer.flip();
+        var newBuffer = ByteBuffer.allocate(buffer.capacity() + size);
+        newBuffer.put(buffer);
+        return newBuffer;
     }
 
     /**
@@ -118,32 +119,32 @@ public class HTTPReader {
      */
 
     public ByteBuffer readChunks() throws IOException {
-        var chunksBuf = ByteBuffer.allocate(BUF_SIZE);
+        var chunksBuffer = ByteBuffer.allocate(BUF_SIZE);
 
-        // read a chunk
         // read the bytes size
-        int size;
-        while ((size = Integer.parseInt(readLineCRLF(), 16)) != 0) {
-
+        while (true) {
+            int size = Integer.parseInt(readLineCRLF(), 16);
+            if (size == 0) {
+                break;
+            }
+            // read a chunk
+            var chunk = readBytes(size).flip();
             // grow the main buffer
-            if (!chunksBuf.hasRemaining()) {
-                chunksBuf = grow(chunksBuf);
-            }
-
-            var chunkBuf = ByteBuffer.allocate(size);
-            // read the chunk data
-            while (chunkBuf.hasRemaining()) {
-                chunkBuf.put(ByteBuffer.wrap(readLineCRLF().getBytes(ASCII_CHARSET)));
-            }
-
-            chunksBuf.put(chunkBuf);
+            int difference = chunk.remaining() - chunksBuffer.remaining();
+            chunksBuffer = grow(chunksBuffer, difference);
+            chunksBuffer.put(chunk);
+            readLineCRLF(); // consume /r/n
         }
-        return chunksBuf;
+        return chunksBuffer;
     }
 
     public static void main(String[] args) throws IOException {
-        var charsetASCII = Charset.forName("ASCII");
-        var request = "GET / HTTP/1.1\r\n" + "Host: www.w3.org\r\n" + "\r\n";
+        var charsetASCII = StandardCharsets.US_ASCII;
+        var request = """
+                GET / HTTP/1.1\r
+                Host: www.w3.org\r
+                \r
+                """;
         var sc = SocketChannel.open();
         sc.connect(new InetSocketAddress("www.w3.org", 80));
         sc.write(charsetASCII.encode(request));
@@ -165,18 +166,26 @@ public class HTTPReader {
         buffer = ByteBuffer.allocate(50);
         sc = SocketChannel.open();
         sc.connect(new InetSocketAddress("igm.univ-mlv.fr", 80));
-        request = "GET /coursprogreseau/ HTTP/1.1\r\n" + "Host: igm.univ-mlv.fr\r\n" + "\r\n";
+        request = """
+                GET /coursprogreseau/ HTTP/1.1\r
+                Host: igm.univ-mlv.fr\r
+                \r
+                """;
         reader = new HTTPReader(sc, buffer);
         sc.write(charsetASCII.encode(request));
         var header = reader.readHeader();
         System.out.println(header);
         var content = reader.readBytes(header.getContentLength());
         content.flip();
-        System.out.println(header.getCharset().orElse(Charset.forName("UTF8")).decode(content));
+        System.out.println(header.getCharset().orElse(StandardCharsets.UTF_8).decode(content));
         sc.close();
 
         buffer = ByteBuffer.allocate(50);
-        request = "GET / HTTP/1.1\r\n" + "Host: www.u-pem.fr\r\n" + "\r\n";
+        request = """
+                GET / HTTP/1.1\r
+                Host: www.u-pem.fr\r
+                \r
+                """;
         sc = SocketChannel.open();
         sc.connect(new InetSocketAddress("www.u-pem.fr", 80));
         reader = new HTTPReader(sc, buffer);
@@ -185,7 +194,7 @@ public class HTTPReader {
         System.out.println(header);
         content = reader.readChunks();
         content.flip();
-        System.out.println(header.getCharset().orElse(Charset.forName("UTF8")).decode(content));
+        System.out.println(header.getCharset().orElse(StandardCharsets.UTF_8).decode(content));
         sc.close();
     }
 }
