@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="37f0e18d-14a6-49bc-b11d-45ac5baeed17" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/network/http/HTTPClient.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,7 +52,7 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager" selected="Application.HTTPReader">
+  <component name="RunManager" selected="Application.HTTPClient">
     <configuration name="HTTPClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="fr.network.http.HTTPClient" />
       <module name="http_client" />
@@ -102,9 +102,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.HTTPClient" />
         <item itemvalue="Application.HTTPReader" />
         <item itemvalue="JUnit.HTTPReaderTest" />
-        <item itemvalue="Application.HTTPClient" />
       </list>
     </recent_temporary>
   </component>
@@ -122,6 +122,7 @@
       <workItem from="1681034137672" duration="959000" />
       <workItem from="1681115201118" duration="14677000" />
       <workItem from="1681458839695" duration="5542000" />
+      <workItem from="1681726729728" duration="4071000" />
     </task>
     <servers />
   </component>
