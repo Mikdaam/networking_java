@@ -25,16 +25,16 @@ public class NetcatUDP {
         var buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
         try (var scanner = new Scanner(System.in);) {
-            while (scanner.hasNextLine()) {
-                var line = scanner.nextLine();
-                try(var dataChan = DatagramChannel.open()) {
-                    dataChan.bind(null);
-                    dataChan.send(cs.encode(line), server);
+            try(var dataChan = DatagramChannel.open()) {
+                while (scanner.hasNextLine()) {
+                    var line = scanner.nextLine();
+                        dataChan.bind(null); // Choose a random port
+                        dataChan.send(cs.encode(line), server); // Send the message
 
-                    var exp = dataChan.receive(buffer);
-                    buffer.flip();
-                    System.out.println("Received " + buffer.remaining() + " bytes from " + exp);
-                    System.out.println("String: " + cs.decode(buffer));
+                        var exp = dataChan.receive(buffer); // Receive the response
+                        buffer.flip();
+                        System.out.println("Received " + buffer.remaining() + " bytes from " + exp);
+                        System.out.println("String: " + cs.decode(buffer));
                 }
                 buffer.compact();
             }
