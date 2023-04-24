@@ -15,7 +15,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
     private final ServerSocketChannel serverSocketChannel;
     private final long timeout;
     private final static int MAX_CLIENT = 5;
-    private ThreadData[] threadsData = new ThreadData[MAX_CLIENT];
+    private final ThreadData[] threadsData = new ThreadData[MAX_CLIENT];
 
 
     public FixedPrestartedLongSumServerWithTimeout(int port, long timeout) throws IOException {
@@ -28,10 +28,9 @@ public class FixedPrestartedLongSumServerWithTimeout {
     /**
      * Iterative server main loop
      *
-     * @throws IOException
      */
 
-    public void launch() throws IOException {
+    public void launch() {
         logger.info("Server started");
         // Manager thread which check every 5000 milliseconds
         Thread.ofPlatform().start(() -> {
@@ -65,7 +64,6 @@ public class FixedPrestartedLongSumServerWithTimeout {
                     }
                 } catch (IOException e) {
                     logger.log(Level.SEVERE, "Accept() can accept anymore");
-                    return;
                 }
             });
         }
@@ -74,8 +72,8 @@ public class FixedPrestartedLongSumServerWithTimeout {
     /**
      * Treat the connection sc applying the protocol. All IOException are thrown
      *
-     * @param sc
-     * @throws IOException
+     * @param sc param
+     * @throws IOException exception
      */
     private void serve(SocketChannel sc, ThreadData event) throws IOException {
         var bufferNbOps = ByteBuffer.allocate(Integer.BYTES);
@@ -117,7 +115,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
     /**
      * Close a SocketChannel while ignoring IOExecption
      *
-     * @param sc
+     * @param sc param
      */
 
     private void silentlyClose(Closeable sc) {
