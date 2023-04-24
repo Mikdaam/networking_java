@@ -13,14 +13,13 @@ public class FixedPrestartedLongSumServer {
     private static final Logger logger = Logger.getLogger(FixedPrestartedLongSumServer.class.getName());
     private static final int BUFFER_SIZE = 1024;
     private final ServerSocketChannel serverSocketChannel;
-    private final int maxClient;
+    private final static int MAX_CLIENT = 5;
 
 
-    public FixedPrestartedLongSumServer(int port, int maxClient) throws IOException {
+    public FixedPrestartedLongSumServer(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
         logger.info(this.getClass().getName() + " starts on port " + port);
-        this.maxClient = maxClient;
     }
 
     /**
@@ -32,7 +31,7 @@ public class FixedPrestartedLongSumServer {
     public void launch() throws IOException {
         logger.info("Server started");
 
-        for (int i = 0; i < maxClient; i++) {
+        for (int i = 0; i < MAX_CLIENT; i++) {
             Thread.ofPlatform().start(() -> {
                 try {
                     while (!Thread.interrupted()) {
@@ -41,13 +40,13 @@ public class FixedPrestartedLongSumServer {
                             logger.info("Connection accepted from " + client.getRemoteAddress());
                             serve(client);
                         } catch (IOException ioe) {
-                            logger.log(Level.SEVERE, "Connection terminated with client by IOException", ioe.getCause());
+                            logger.log(Level.INFO, "Connection terminated with client by IOException", ioe.getCause());
                         } finally {
                             silentlyClose(client);
                         }
                     }
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Accept can accept anymore");
+                    logger.log(Level.SEVERE, "Accept() can accept anymore");
                     return;
                 }
             });
@@ -122,7 +121,7 @@ public class FixedPrestartedLongSumServer {
     }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
-        var server = new FixedPrestartedLongSumServer(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+        var server = new FixedPrestartedLongSumServer(Integer.parseInt(args[0]));
         server.launch();
     }
 }

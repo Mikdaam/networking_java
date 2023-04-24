@@ -13,14 +13,16 @@ public class FixedPrestartedLongSumServerWithTimeout {
     private static final Logger logger = Logger.getLogger(FixedPrestartedLongSumServerWithTimeout.class.getName());
     private static final int BUFFER_SIZE = 1024;
     private final ServerSocketChannel serverSocketChannel;
-    private final int maxClient;
+    private final long timeout;
+    private final static int MAX_CLIENT = 5;
+    private ThreadData[] threadsData = new ThreadData[MAX_CLIENT];
 
 
-    public FixedPrestartedLongSumServerWithTimeout(int port, int maxClient) throws IOException {
+    public FixedPrestartedLongSumServerWithTimeout(int port, long timeout) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
         logger.info(this.getClass().getName() + " starts on port " + port);
-        this.maxClient = maxClient;
+        this.timeout = timeout;
     }
 
     /**
@@ -31,23 +33,38 @@ public class FixedPrestartedLongSumServerWithTimeout {
 
     public void launch() throws IOException {
         logger.info("Server started");
+        // Manager thread which check every 5000 milliseconds
+        Thread.ofPlatform().start(() -> {
+            try {
+                for (var threadData: threadsData) {
+                    threadData.closeIfInactive(timeout);
+                }
+                Thread.sleep(1_000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                logger.info("IOException");
+            }
+        });
 
-        for (int i = 0; i < maxClient; i++) {
+        for (int i = 0; i < MAX_CLIENT; i++) {
+            threadsData[i] = new ThreadData();
+            int finalI = i;
             Thread.ofPlatform().start(() -> {
                 try {
                     while (!Thread.interrupted()) {
                         SocketChannel client = serverSocketChannel.accept();
                         try {
                             logger.info("Connection accepted from " + client.getRemoteAddress());
-                            serve(client);
+                            serve(client, threadsData[finalI]);
                         } catch (IOException ioe) {
-                            logger.log(Level.SEVERE, "Connection terminated with client by IOException", ioe.getCause());
+                            logger.log(Level.INFO, "Connection terminated with client by IOException", ioe.getCause());
                         } finally {
                             silentlyClose(client);
                         }
                     }
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Accept can accept anymore");
+                    logger.log(Level.SEVERE, "Accept() can accept anymore");
                     return;
                 }
             });
@@ -60,7 +77,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
      * @param sc
      * @throws IOException
      */
-    private void serve(SocketChannel sc) throws IOException {
+    private void serve(SocketChannel sc, ThreadData event) throws IOException {
         var bufferNbOps = ByteBuffer.allocate(Integer.BYTES);
         long sum = 0;
 
@@ -70,6 +87,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
                 logger.info("Wrong packet format. Close connection");
                 return;
             }
+            event.tick();
             bufferNbOps.flip();
             int nbOps = bufferNbOps.getInt();
             if (nbOps < 0) {
@@ -82,7 +100,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
                 logger.info("Wrong packet format. Close connection");
                 return;
             }
-
+            event.tick();
             while (longs.hasRemaining()) {
                 sum += longs.getLong();
             }
@@ -92,6 +110,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
             longs.flip();
 
             sc.write(longs);
+            event.tick();
         }
     }
 
@@ -122,7 +141,7 @@ public class FixedPrestartedLongSumServerWithTimeout {
     }
 
     public static void main(String[] args) throws NumberFormatException, IOException {
-        var server = new FixedPrestartedLongSumServerWithTimeout(Integer.parseInt(args[0]), Integer.parseInt(args[1]));
+        var server = new FixedPrestartedLongSumServerWithTimeout(Integer.parseInt(args[0]), Long.parseLong(args[1]));
         server.launch();
     }
 }
