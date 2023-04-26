@@ -1,5 +1,7 @@
 package fr.networks.tcp_blocking.exo1;
 
+import fr.networks.tcp_blocking.utils.Helpers;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
@@ -29,8 +31,8 @@ public class ServerSum {
 			System.out.println("Starting select");
 			try {
 				selector.select(this::treatKey);
-			} catch (IOException e) {
-				e.getCause();
+			} catch (UncheckedIOException tunneled) {
+				throw tunneled.getCause();
 			}
 			System.out.println("Select finished");
 		}
@@ -43,6 +45,7 @@ public class ServerSum {
 				doAccept(key);
 			}
 		} catch (IOException e) {
+			logger.severe("Server down");
 			throw new UncheckedIOException(e);
 		}
 		try {
