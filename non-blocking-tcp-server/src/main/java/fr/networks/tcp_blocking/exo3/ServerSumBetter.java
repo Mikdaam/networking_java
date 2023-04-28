@@ -1,4 +1,4 @@
-package fr.networks.tcp_blocking.exo2;
+package fr.networks.tcp_blocking.exo3;
 
 import fr.networks.tcp_blocking.utils.Helpers;
 
@@ -10,11 +10,12 @@ import java.nio.channels.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ServerEcho {
+public class ServerSumBetter {
 	static private class Context {
 		private final SelectionKey key;
 		private final SocketChannel sc;
-		private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+		private final ByteBuffer bufferIn = ByteBuffer.allocate(BUFFER_SIZE);
+		private final ByteBuffer bufferOut = ByteBuffer.allocate(BUFFER_SIZE);
 		private boolean closed = false;
 
 		private Context(SelectionKey key) {
@@ -23,58 +24,35 @@ public class ServerEcho {
 		}
 
 		/**
-		 * Update the interestOps of the key looking only at values of the boolean
-		 * closed and the ByteBuffer buffer.
+		 * Process the content of bufferIn into bufferOut
 		 *
-		 * The convention is that buff is in write-mode.
+		 * The convention is that both buffers are in write-mode before the call to
+		 * process and after the call
+		 *
 		 */
+
+		private void process() {
+
+		}
+
+		/**
+		 * Update the interestOps of the key looking only at values of the boolean
+		 * closed and of both ByteBuffers.
+		 *
+		 * The convention is that both buffers are in write-mode before the call to
+		 * updateInterestOps and after the call. Also it is assumed that process has
+		 * been be called just before updateInterestOps.
+		 */
+
 		private void updateInterestOps() {
 			var newInterestOps = 0;
 
-			if (!closed && buffer.hasRemaining()) {
-				newInterestOps |= SelectionKey.OP_READ;
-			}
-
-			if (buffer.position() != 0) {
-				newInterestOps |= SelectionKey.OP_WRITE;
-			}
 
 			if (newInterestOps == 0) {
 				silentlyClose();
 				return;
 			}
 			key.interestOps(newInterestOps);
-		}
-
-		/**
-		 * Performs the read action on sc
-		 *
-		 * The convention is that buffer is in write-mode before calling doRead and is in
-		 * write-mode after calling doRead
-		 *
-		 * @throws IOException
-		 */
-		private void doRead() throws IOException {
-			if (sc.read(buffer) == -1) {
-				closed = true;
-				return;
-			}
-			updateInterestOps();
-		}
-
-		/**
-		 * Performs the write action on sc
-		 *
-		 * The convention is that buffer is in write-mode before calling doWrite and is in
-		 * write-mode after calling doWrite
-		 *
-		 * @throws IOException
-		 */
-		private void doWrite() throws IOException {
-			buffer.flip();
-			sc.write(buffer);
-			buffer.compact();
-			updateInterestOps();
 		}
 
 		private void silentlyClose() {
@@ -84,15 +62,49 @@ public class ServerEcho {
 				// ignore exception
 			}
 		}
+
+		/**
+		 * Performs the read action on sc
+		 *
+		 * The convention is that both buffers are in write-mode before the call to
+		 * doRead and after the call
+		 *
+		 * @throws IOException
+		 */
+
+		private void doRead() throws IOException {
+			if (sc.read(bufferIn) == -1) {
+				closed = true;
+				return;
+			}
+			updateInterestOps();
+		}
+
+		/**
+		 * Performs the write action on sc
+		 *
+		 * The convention is that both buffers are in write-mode before the call to
+		 * doWrite and after the call
+		 *
+		 * @throws IOException
+		 */
+
+		private void doWrite() throws IOException {
+			bufferOut.flip();
+			sc.write(bufferOut);
+			bufferOut.compact();
+			updateInterestOps();
+		}
+
 	}
 
-	private static final int BUFFER_SIZE = 1_024;
-	private static final Logger logger = Logger.getLogger(ServerEcho.class.getName());
+	private static final int BUFFER_SIZE = 1024;
+	private static final Logger logger = Logger.getLogger(ServerSumBetter.class.getName());
 
 	private final ServerSocketChannel serverSocketChannel;
 	private final Selector selector;
 
-	public ServerEcho(int port) throws IOException {
+	public ServerSumBetter(int port) throws IOException {
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.bind(new InetSocketAddress(port));
 		selector = Selector.open();
@@ -148,7 +160,7 @@ public class ServerEcho {
 	}
 
 	private void silentlyClose(SelectionKey key) {
-		var sc = (Channel) key.channel();
+		Channel sc = (Channel) key.channel();
 		try {
 			sc.close();
 		} catch (IOException e) {
@@ -161,10 +173,10 @@ public class ServerEcho {
 			usage();
 			return;
 		}
-		new ServerEcho(Integer.parseInt(args[0])).launch();
+		new ServerSumBetter(Integer.parseInt(args[0])).launch();
 	}
 
 	private static void usage() {
-		System.out.println("Usage : ServerEcho port");
+		System.out.println("Usage : ServerSumBetter port");
 	}
 }
