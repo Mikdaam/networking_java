@@ -1,4 +1,4 @@
-package fr.networks.tcp_blocking.exo3;
+package fr.networks.tcp_blocking.exo4;
 
 import fr.networks.tcp_blocking.utils.Helpers;
 
@@ -7,37 +7,61 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.ArrayDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ServerSumBetter {
+public class ServerChatInt {
 	static private class Context {
 		private final SelectionKey key;
 		private final SocketChannel sc;
 		private final ByteBuffer bufferIn = ByteBuffer.allocate(BUFFER_SIZE);
 		private final ByteBuffer bufferOut = ByteBuffer.allocate(BUFFER_SIZE);
+		private final ArrayDeque<Integer> queue = new ArrayDeque<>();
+		private final ServerChatInt server; // we could also have Context as an instance class, which would naturally
+		// give access to ServerChatInt.this
 		private boolean closed = false;
 
-		private Context(SelectionKey key) {
+		private Context(ServerChatInt server, SelectionKey key) {
 			this.key = key;
 			this.sc = (SocketChannel) key.channel();
+			this.server = server;
 		}
 
 		/**
-		 * Process the content of bufferIn into bufferOut
+		 * Process the content of bufferIn
 		 *
-		 * The convention is that both buffers are in write-mode before the call to
-		 * process and after the call
+		 * The convention is that bufferIn is in write-mode before the call to process and
+		 * after the call
 		 *
 		 */
-
-		private void process() {
+		private void processIn() {
 			bufferIn.flip();
-			while (bufferOut.remaining() > Integer.BYTES && bufferIn.remaining() >= Integer.BYTES * 2) {
-				int res = bufferIn.getInt() + bufferIn.getInt();
-				bufferOut.putInt(res);
+			while (bufferIn.remaining() >= Integer.BYTES) {
+				server.broadcast(bufferIn.getInt());
 			}
 			bufferIn.compact();
+		}
+
+		/**
+		 * Add a message to the message queue, tries to fill bufferOut and updateInterestOps
+		 *
+		 * @param msg
+		 */
+		public void queueMessage(Integer msg) {
+			queue.add(msg);
+			processOut();
+			updateInterestOps();
+		}
+
+		/**
+		 * Try to fill bufferOut from the message queue
+		 *
+		 */
+		private void processOut() {
+			while (bufferOut.remaining() >= Integer.BYTES && !queue.isEmpty()) {
+				bufferOut.putInt(queue.remove());
+			}
 		}
 
 		/**
@@ -83,13 +107,12 @@ public class ServerSumBetter {
 		 *
 		 * @throws IOException
 		 */
-
 		private void doRead() throws IOException {
 			if (sc.read(bufferIn) == -1) {
 				closed = true;
 				return;
 			}
-			process();
+			processIn();
 			updateInterestOps();
 		}
 
@@ -106,19 +129,19 @@ public class ServerSumBetter {
 			bufferOut.flip();
 			sc.write(bufferOut);
 			bufferOut.compact();
-			process();
+			processOut();
 			updateInterestOps();
 		}
 
 	}
 
-	private static final int BUFFER_SIZE = 1024;
-	private static final Logger logger = Logger.getLogger(ServerSumBetter.class.getName());
+	private static final int BUFFER_SIZE = 1_024;
+	private static final Logger logger = Logger.getLogger(ServerChatInt.class.getName());
 
 	private final ServerSocketChannel serverSocketChannel;
 	private final Selector selector;
 
-	public ServerSumBetter(int port) throws IOException {
+	public ServerChatInt(int port) throws IOException {
 		serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.bind(new InetSocketAddress(port));
 		selector = Selector.open();
@@ -170,7 +193,7 @@ public class ServerSumBetter {
 		}
 		client.configureBlocking(false);
 		var clientKey = client.register(selector, SelectionKey.OP_READ);
-		clientKey.attach(new Context(clientKey));
+		clientKey.attach(new Context(this, clientKey));
 	}
 
 	private void silentlyClose(SelectionKey key) {
@@ -182,12 +205,26 @@ public class ServerSumBetter {
 		}
 	}
 
+	/**
+	 * Add a message to all connected clients queue
+	 *
+	 * @param msg
+	 */
+	private void broadcast(Integer msg) {
+		selector.selectedKeys().forEach(selectionKey -> {
+			if (selectionKey.channel() instanceof ServerSocketChannel) {
+				return;
+			}
+			((Context) selectionKey.attachment()).queueMessage(msg);
+		});
+	}
+
 	public static void main(String[] args) throws NumberFormatException, IOException {
 		if (args.length != 1) {
 			usage();
 			return;
 		}
-		new ServerSumBetter(Integer.parseInt(args[0])).launch();
+		new ServerChatInt(Integer.parseInt(args[0])).launch();
 	}
 
 	private static void usage() {
