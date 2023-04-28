@@ -29,18 +29,27 @@ public class ServerEcho {
 		 * The convention is that buff is in write-mode.
 		 */
 		private void updateInterestOps() {
-			if (closed) {
-				silentlyClose();
-				return;
-			}
+			var hasSpace = buffer.hasRemaining();
 
 			buffer.flip();
-			if (buffer.hasRemaining()) {
-				buffer.compact();
+			try {
+				if (hasSpace && buffer.hasRemaining()) {
+					key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+					return;
+				}
+
+				if (!hasSpace) {
+					key.interestOps(SelectionKey.OP_WRITE);
+					return;
+				}
+
 				key.interestOps(SelectionKey.OP_WRITE);
-				return;
-			} else {
-				key.interestOps(SelectionKey.OP_READ);
+
+				if (closed) {
+					silentlyClose();
+				}
+			} finally {
+				buffer.compact();
 			}
 		}
 
