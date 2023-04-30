@@ -129,7 +129,6 @@ public class ServerChatInt {
 			bufferOut.flip();
 			sc.write(bufferOut);
 			bufferOut.compact();
-			processOut();
 			updateInterestOps();
 		}
 
@@ -211,7 +210,7 @@ public class ServerChatInt {
 	 * @param msg
 	 */
 	private void broadcast(Integer msg) {
-		selector.selectedKeys().forEach(selectionKey -> {
+		selector.keys().forEach(selectionKey -> {
 			if (selectionKey.channel() instanceof ServerSocketChannel) {
 				return;
 			}
