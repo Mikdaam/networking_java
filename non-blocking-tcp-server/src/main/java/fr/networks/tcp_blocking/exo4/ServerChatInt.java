@@ -1,6 +1,7 @@
 package fr.networks.tcp_blocking.exo4;
 
 import fr.networks.tcp_blocking.utils.Helpers;
+import fr.networks.tcp_blocking.utils.IntReader;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

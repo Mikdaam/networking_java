@@ -1,6 +1,6 @@
 package fr.networks.tcp_blocking;
 
-import fr.networks.tcp_blocking.exo5.StringReader;
+import fr.networks.tcp_blocking.utils.StringReader;
 import fr.networks.tcp_blocking.utils.Reader;
 import org.junit.jupiter.api.Test;
 

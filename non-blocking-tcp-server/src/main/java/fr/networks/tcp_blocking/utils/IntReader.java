@@ -1,4 +1,4 @@
-package fr.networks.tcp_blocking.exo4;
+package fr.networks.tcp_blocking.utils;
 
 import fr.networks.tcp_blocking.utils.Reader;
 

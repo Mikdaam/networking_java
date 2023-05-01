@@ -1,6 +1,7 @@
 package fr.networks.tcp_blocking.exo5;
 
 import fr.networks.tcp_blocking.utils.Reader;
+import fr.networks.tcp_blocking.utils.StringReader;
 
 import java.nio.ByteBuffer;
 
@@ -10,10 +11,10 @@ public class MessageReader implements Reader<Message> {
     }
 
     private State state = State.WAITING;
-    // write-mode
     private final StringReader loginReader = new StringReader();
     private final StringReader msgReader = new StringReader();
     private Message message;
+    private boolean loginIsRead;
 
     @Override
     public ProcessStatus process(ByteBuffer buffer) {
@@ -21,7 +22,13 @@ public class MessageReader implements Reader<Message> {
             throw new IllegalStateException();
         }
 
-        var loginStatus = loginReader.process(buffer);
+        ProcessStatus loginStatus;
+        if (!loginIsRead) {
+            loginStatus = loginReader.process(buffer);
+        } else {
+            loginStatus = ProcessStatus.DONE;
+        }
+
         if (loginStatus != ProcessStatus.DONE) {
             return loginStatus;
         } else {
@@ -47,6 +54,7 @@ public class MessageReader implements Reader<Message> {
     @Override
     public void reset() {
         state = State.WAITING;
+        loginIsRead = false;
         loginReader.reset();
         msgReader.reset();
     }

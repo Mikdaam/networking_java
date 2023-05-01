@@ -1,6 +1,4 @@
-package fr.networks.tcp_blocking.exo5;
-
-import fr.networks.tcp_blocking.utils.Reader;
+package fr.networks.tcp_blocking.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -12,9 +10,10 @@ public class StringReader implements Reader<String> {
     }
 
     private StringReader.State state = State.WAITING;
-    private final ByteBuffer sizeBuffer = ByteBuffer.allocate(Integer.BYTES); // write-mode
+    private final IntReader sizeReader = new IntReader();
     private final ByteBuffer stringBuffer = ByteBuffer.allocate(1_024 - Integer.BYTES); // write-mode
     private String value;
+    private boolean sizeIsRead;
 
     private void fillBuffer(ByteBuffer buffer, ByteBuffer internalBuffer) {
         buffer.flip();
@@ -38,27 +37,32 @@ public class StringReader implements Reader<String> {
             throw new IllegalStateException();
         }
 
-        while (sizeBuffer.hasRemaining()) {
-            fillBuffer(buffer, sizeBuffer);
-            if (sizeBuffer.hasRemaining()) {
+        ProcessStatus intStatus;
+        if (!sizeIsRead) {
+            intStatus = sizeReader.process(buffer);
+        } else {
+            intStatus = ProcessStatus.DONE;
+        }
+
+        if (intStatus != ProcessStatus.DONE) {
+            return intStatus;
+        } else {
+            sizeIsRead = true;
+            int size = sizeReader.get();
+            if (size < 0 || size > 1020) {
+                return ProcessStatus.ERROR;
+            }
+
+            stringBuffer.limit(size);
+            fillBuffer(buffer, stringBuffer);
+            if (stringBuffer.hasRemaining()) {
                 return ProcessStatus.REFILL;
             }
+            state = State.DONE;
+            stringBuffer.flip();
+            value = StandardCharsets.UTF_8.decode(stringBuffer).toString();
+            return ProcessStatus.DONE;
         }
-
-        int size = sizeBuffer.flip().getInt();
-        if (size < 0 || size > 1020) {
-            return ProcessStatus.ERROR;
-        }
-
-        stringBuffer.limit(size);
-        fillBuffer(buffer, stringBuffer);
-        if (stringBuffer.hasRemaining()) {
-            return ProcessStatus.REFILL;
-        }
-        state = State.DONE;
-        stringBuffer.flip();
-        value = StandardCharsets.UTF_8.decode(stringBuffer).toString();
-        return ProcessStatus.DONE;
     }
 
     @Override
@@ -72,7 +76,8 @@ public class StringReader implements Reader<String> {
     @Override
     public void reset() {
         state = State.WAITING;
-        sizeBuffer.clear();
+        sizeIsRead = false;
+        sizeReader.reset();
         stringBuffer.clear();
     }
 }
