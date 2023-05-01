@@ -20,12 +20,14 @@ public class ServerChatInt {
 		private final ArrayDeque<Integer> queue = new ArrayDeque<>();
 		private final ServerChatInt server; // we could also have Context as an instance class, which would naturally
 		// give access to ServerChatInt.this
+		private final IntReader intReader;
 		private boolean closed = false;
 
 		private Context(ServerChatInt server, SelectionKey key) {
 			this.key = key;
 			this.sc = (SocketChannel) key.channel();
 			this.server = server;
+			intReader = new IntReader();
 		}
 
 		/**
@@ -36,11 +38,28 @@ public class ServerChatInt {
 		 *
 		 */
 		private void processIn() {
-			bufferIn.flip();
+            /*bufferIn.flip();
 			while (bufferIn.remaining() >= Integer.BYTES) {
 				server.broadcast(bufferIn.getInt());
 			}
-			bufferIn.compact();
+			bufferIn.compact();*/
+			while (true) {
+				var status = intReader.process(bufferIn);
+				switch (status) {
+					case DONE -> {
+						int value = intReader.get();
+						server.broadcast(value);
+						intReader.reset();
+					}
+					case REFILL -> {
+						return;
+					}
+					case ERROR -> {
+						silentlyClose();
+						return;
+					}
+				}
+			}
 		}
 
 		/**
@@ -69,8 +88,8 @@ public class ServerChatInt {
 		 * closed and of both ByteBuffers.
 		 *
 		 * The convention is that both buffers are in write-mode before the call to
-		 * updateInterestOps and after the call. Also it is assumed that process has
-		 * been be called just before updateInterestOps.
+		 * updateInterestOps and after the call. Also, it is assumed that process has
+		 * been called just before updateInterestOps.
 		 */
 
 		private void updateInterestOps() {
@@ -101,7 +120,7 @@ public class ServerChatInt {
 
 		/**
 		 * Performs the read action on sc
-		 *
+		 * <p>
 		 * The convention is that both buffers are in write-mode before the call to
 		 * doRead and after the call
 		 *
@@ -118,7 +137,7 @@ public class ServerChatInt {
 
 		/**
 		 * Performs the write action on sc
-		 *
+		 * <p>
 		 * The convention is that both buffers are in write-mode before the call to
 		 * doWrite and after the call
 		 *
@@ -196,7 +215,7 @@ public class ServerChatInt {
 	}
 
 	private void silentlyClose(SelectionKey key) {
-		Channel sc = (Channel) key.channel();
+		Channel sc = key.channel();
 		try {
 			sc.close();
 		} catch (IOException e) {
