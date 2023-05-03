@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="99f3d5a9-21aa-428f-9a2f-533841df4ed9" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="Record" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2OxE2MF8q8sAVfDSZRl3XfF7IKl" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "non-blocking-tcp-client",
+    "last_opened_file_path": "C:/Users/bmikd/OneDrive/Bureau/Nouveau_PC/ESIPE/Annee_2/S2/Advanced_Algorithmics/Project",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "show.migrate.to.gradle.popup": "false",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="fr.networks.tcp_blocking.exo5" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.ServerChat">
+    <configuration name="ServerChat" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fr.networks.tcp_blocking.exo5.ServerChat" />
+      <module name="non-blocking-tcp-server" />
+      <option name="PROGRAM_PARAMETERS" value="7777 " />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.networks.tcp_blocking.exo5.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServerChatInt" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fr.networks.tcp_blocking.exo4.ServerChatInt" />
+      <module name="non-blocking-tcp-server" />
+      <option name="PROGRAM_PARAMETERS" value="7777 " />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.networks.tcp_blocking.exo4.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServerSumBetter" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="fr.networks.tcp_blocking.exo3.ServerSumBetter" />
+      <module name="non-blocking-tcp-server" />
+      <option name="PROGRAM_PARAMETERS" value="7777 " />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.networks.tcp_blocking.exo3.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="StringReaderTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="non-blocking-tcp-server" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.networks.tcp_blocking.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.networks.tcp_blocking" />
+      <option name="MAIN_CLASS_NAME" value="fr.networks.tcp_blocking.StringReaderTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="StringReaderTest.smallBuffer" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="non-blocking-tcp-server" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.networks.tcp_blocking.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.networks.tcp_blocking" />
+      <option name="MAIN_CLASS_NAME" value="fr.networks.tcp_blocking.StringReaderTest" />
+      <option name="METHOD_NAME" value="smallBuffer" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.ServerChat" />
+      <item itemvalue="Application.ServerChatInt" />
+      <item itemvalue="Application.ServerSumBetter" />
+      <item itemvalue="JUnit.StringReaderTest" />
+      <item itemvalue="JUnit.StringReaderTest.smallBuffer" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.ServerChat" />
+        <item itemvalue="JUnit.StringReaderTest" />
+        <item itemvalue="JUnit.StringReaderTest.smallBuffer" />
+        <item itemvalue="Application.ServerChatInt" />
+        <item itemvalue="Application.ServerSumBetter" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="99f3d5a9-21aa-428f-9a2f-533841df4ed9" name="Changes" comment="" />
+      <created>1682493627120</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1682493627120</updated>
+      <workItem from="1682493627857" duration="5268000" />
+      <workItem from="1682540307886" duration="10131000" />
+      <workItem from="1682682185118" duration="8451000" />
+      <workItem from="1682701405050" duration="4073000" />
+      <workItem from="1682843565182" duration="247000" />
+      <workItem from="1682855213799" duration="17077000" />
+    </task>
+    <task id="LOCAL-00001" summary="finally finished it">
+      <created>1682856484423</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1682856484423</updated>
+    </task>
+    <task id="LOCAL-00002" summary="ServerChatInt finished">
+      <created>1682936971764</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1682936971764</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Add reeder">
+      <created>1682936986857</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1682936986857</updated>
+    </task>
+    <task id="LOCAL-00004" summary="JUnit Test to test StringReader">
+      <created>1682956505093</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1682956505093</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Neccessary files to finish this lab.&#10;The ServerChat is working, so done.">
+      <created>1682956550781</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1682956550781</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="finally finished it" />
+    <MESSAGE value="ServerChatInt finished" />
+    <MESSAGE value="Add reeder" />
+    <MESSAGE value="JUnit Test to test StringReader" />
+    <MESSAGE value="Neccessary files to finish this lab.&#10;The ServerChat is working, so done." />
+    <option name="LAST_COMMIT_MESSAGE" value="Neccessary files to finish this lab.&#10;The ServerChat is working, so done." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/test/java/fr/networks/tcp_blocking/StringReaderTest.java</url>
+          <line>59</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
