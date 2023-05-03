@@ -9,8 +9,5 @@
         <module name="non-blocking-tcp-server" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="non-blocking-tcp-server" target="19" />
-    </bytecodeTargetLevel>
   </component>
 </project>

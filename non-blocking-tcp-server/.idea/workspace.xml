@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="99f3d5a9-21aa-428f-9a2f-533841df4ed9" name="Changes" comment="" />
+    <list default="true" id="99f3d5a9-21aa-428f-9a2f-533841df4ed9" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/exo5/ServerChat.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/exo5/ServerChat.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,6 +23,13 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
   <component name="ProjectId" id="2OxE2MF8q8sAVfDSZRl3XfF7IKl" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -32,7 +41,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "non-blocking-tcp-client",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/bmikd/OneDrive/Bureau/Nouveau_PC/ESIPE/Annee_2/S2/Advanced_Algorithmics/Project",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -153,6 +162,7 @@
       <workItem from="1682701405050" duration="4073000" />
       <workItem from="1682843565182" duration="247000" />
       <workItem from="1682855213799" duration="17077000" />
+      <workItem from="1683113827056" duration="391000" />
     </task>
     <task id="LOCAL-00001" summary="finally finished it">
       <created>1682856484423</created>

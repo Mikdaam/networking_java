@@ -128,7 +128,6 @@ public class ServerChat {
 		private void doRead() throws IOException {
 			if (sc.read(bufferIn) == -1) {
 				closed = true;
-				return;
 			}
 			processIn();
 			updateInterestOps();
