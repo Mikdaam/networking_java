@@ -11,4 +11,9 @@ public record Message(String login, String msg) {
         return bb.putInt(loginBytes.remaining()).put(loginBytes)
                 .putInt(msgBytes.remaining()).put(msgBytes);
     }
+
+    @Override
+    public String toString() {
+        return login + ": " + msg;
+    }
 }

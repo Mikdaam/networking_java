@@ -1,6 +1,7 @@
 package fr.networks.tcp.nonblocking;
 
 import fr.networks.tcp.nonblocking.utils.Message;
+import fr.networks.tcp.nonblocking.utils.MessageReader;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -12,6 +13,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
 
@@ -24,6 +27,7 @@ public class ClientChat {
         private final ByteBuffer bufferOut = ByteBuffer.allocate(BUFFER_SIZE);
         private final ArrayDeque<Message> queue = new ArrayDeque<>();
         private boolean closed = false;
+        private final MessageReader messageReader = new MessageReader();
 
         private Context(SelectionKey key) {
             this.key = key;
@@ -38,7 +42,24 @@ public class ClientChat {
          *
          */
         private void processIn() {
-            // TODO
+            while (true) {
+                var status = messageReader.process(bufferIn);
+                switch (status) {
+                    case DONE -> {
+                        var value = messageReader.get();
+                        // TODO: Do something with the value
+                        System.out.println(value);
+                        messageReader.reset();
+                    }
+                    case REFILL -> {
+                        return;
+                    }
+                    case ERROR -> {
+                        silentlyClose();
+                        return;
+                    }
+                }
+            }
         }
 
         /**
@@ -47,7 +68,9 @@ public class ClientChat {
          * @param msg message
          */
         private void queueMessage(Message msg) {
-            // TODO
+            queue.add(msg);
+            processOut();
+            updateInterestOps();
         }
 
         /**
@@ -55,7 +78,13 @@ public class ClientChat {
          *
          */
         private void processOut() {
-            // TODO
+            while (!queue.isEmpty()) {
+                var msg = queue.remove().encode().flip();
+                if (bufferOut.remaining() < msg.remaining()) {
+                    return;
+                }
+                bufferOut.put(msg);
+            }
         }
 
         /**
@@ -68,7 +97,21 @@ public class ClientChat {
          */
 
         private void updateInterestOps() {
-            // TODO
+            int newInterestOps = 0;
+
+            if (!closed && bufferIn.hasRemaining()) {
+                newInterestOps |= SelectionKey.OP_READ;
+            }
+
+            if (bufferOut.position() != 0) {
+                newInterestOps |= SelectionKey.OP_WRITE;
+            }
+
+            if (newInterestOps == 0) {
+                silentlyClose();
+                return;
+            }
+            key.interestOps(newInterestOps);
         }
 
         private void silentlyClose() {
@@ -88,7 +131,11 @@ public class ClientChat {
          * @throws IOException
          */
         private void doRead() throws IOException {
-            // TODO
+            if (sc.read(bufferIn) == -1) {
+                closed = true;
+            }
+            processIn();
+            updateInterestOps();
         }
 
         /**
@@ -101,16 +148,23 @@ public class ClientChat {
          */
 
         private void doWrite() throws IOException {
-            // TODO
+            bufferOut.flip();
+            sc.write(bufferOut);
+            bufferOut.compact();
+            updateInterestOps();
         }
 
         public void doConnect() throws IOException {
-            // TODO
+            if (!sc.finishConnect()) {
+                logger.warning("The selector give a bad hint");
+                return; // selector gave a bad hint
+            }
+            key.interestOps(SelectionKey.OP_WRITE);
         }
     }
 
-    private static int BUFFER_SIZE = 10_000;
-    private static Logger logger = Logger.getLogger(ClientChat.class.getName());
+    private static final int BUFFER_SIZE = 10_000;
+    private static final Logger logger = Logger.getLogger(ClientChat.class.getName());
 
     private final SocketChannel sc;
     private final Selector selector;
@@ -118,6 +172,7 @@ public class ClientChat {
     private final String login;
     private final Thread console;
     private Context uniqueContext;
+    private final BlockingQueue<String> messages = new ArrayBlockingQueue<>(10);
 
     public ClientChat(String login, InetSocketAddress serverAddress) throws IOException {
         this.serverAddress = serverAddress;
@@ -149,7 +204,8 @@ public class ClientChat {
      */
 
     private void sendCommand(String msg) throws InterruptedException {
-        // TODO
+        messages.add(msg);
+        selector.wakeup();
     }
 
     /**
@@ -157,7 +213,11 @@ public class ClientChat {
      */
 
     private void processCommands() {
-        // TODO
+        // TODO: Consider there is only one command
+        String msg;
+        while ((msg = messages.poll()) != null) {
+            uniqueContext.queueMessage(new Message(login, msg));
+        }
     }
 
     public void launch() throws IOException {
