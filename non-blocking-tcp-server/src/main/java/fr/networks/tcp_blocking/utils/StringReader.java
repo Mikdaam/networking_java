@@ -6,14 +6,13 @@ import java.nio.charset.StandardCharsets;
 public class StringReader implements Reader<String> {
 
     private enum State {
-        DONE, WAITING, ERROR
+        DONE, WAITING_SIZE, WAITING_CONTENT, ERROR
     }
 
-    private StringReader.State state = State.WAITING;
+    private StringReader.State state = State.WAITING_SIZE;
     private final IntReader sizeReader = new IntReader();
     private final ByteBuffer stringBuffer = ByteBuffer.allocate(1_024 - Integer.BYTES); // write-mode
     private String value;
-    private boolean sizeIsRead;
 
     private void fillBuffer(ByteBuffer buffer, ByteBuffer internalBuffer) {
         buffer.flip();
@@ -37,23 +36,21 @@ public class StringReader implements Reader<String> {
             throw new IllegalStateException();
         }
 
-        ProcessStatus intStatus;
-        if (!sizeIsRead) {
-            intStatus = sizeReader.process(buffer);
-        } else {
-            intStatus = ProcessStatus.DONE;
+        if (state == State.WAITING_SIZE) {
+            var status = sizeReader.process(buffer);
+            if (status == ProcessStatus.DONE) {
+                state = State.WAITING_CONTENT;
+                int size = sizeReader.get();
+                if (size < 0 || size > 1020) {
+                    return ProcessStatus.ERROR;
+                }
+                stringBuffer.limit(size);
+            } else {
+                return status;
+            }
         }
 
-        if (intStatus != ProcessStatus.DONE) {
-            return intStatus;
-        } else {
-            sizeIsRead = true;
-            int size = sizeReader.get();
-            if (size < 0 || size > 1020) {
-                return ProcessStatus.ERROR;
-            }
-
-            stringBuffer.limit(size);
+        if (state == State.WAITING_CONTENT) {
             fillBuffer(buffer, stringBuffer);
             if (stringBuffer.hasRemaining()) {
                 return ProcessStatus.REFILL;
@@ -63,6 +60,7 @@ public class StringReader implements Reader<String> {
             value = StandardCharsets.UTF_8.decode(stringBuffer).toString();
             return ProcessStatus.DONE;
         }
+        throw new AssertionError();
     }
 
     @Override
@@ -75,8 +73,7 @@ public class StringReader implements Reader<String> {
 
     @Override
     public void reset() {
-        state = State.WAITING;
-        sizeIsRead = false;
+        state = State.WAITING_SIZE;
         sizeReader.reset();
         stringBuffer.clear();
     }
