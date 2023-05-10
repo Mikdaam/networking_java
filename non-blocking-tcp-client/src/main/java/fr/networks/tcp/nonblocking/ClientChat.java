@@ -79,11 +79,12 @@ public class ClientChat {
          */
         private void processOut() {
             while (!queue.isEmpty()) {
-                var msg = queue.remove().encode().flip();
-                if (bufferOut.remaining() < msg.remaining()) {
+                var msg = queue.peek();
+                var msgBytes = msg.encode().flip();
+                if (bufferOut.remaining() < msgBytes.remaining()) {
                     return;
                 }
-                bufferOut.put(msg);
+                bufferOut.put(msgBytes);
             }
         }
 
@@ -150,6 +151,7 @@ public class ClientChat {
         private void doWrite() throws IOException {
             bufferOut.flip();
             sc.write(bufferOut);
+            processOut();
             bufferOut.compact();
             updateInterestOps();
         }
@@ -173,6 +175,7 @@ public class ClientChat {
     private final Thread console;
     private Context uniqueContext;
     private final BlockingQueue<String> messages = new ArrayBlockingQueue<>(10);
+    private final Object lock = new Object();
 
     public ClientChat(String login, InetSocketAddress serverAddress) throws IOException {
         this.serverAddress = serverAddress;
@@ -204,8 +207,10 @@ public class ClientChat {
      */
 
     private void sendCommand(String msg) throws InterruptedException {
-        messages.add(msg);
-        selector.wakeup();
+        synchronized (lock) {
+            messages.add(msg);
+            selector.wakeup();
+        }
     }
 
     /**
@@ -214,9 +219,14 @@ public class ClientChat {
 
     private void processCommands() {
         // TODO: Consider there is only one command
-        String msg;
-        while ((msg = messages.poll()) != null) {
-            uniqueContext.queueMessage(new Message(login, msg));
+        synchronized (lock) {
+            while (true) {
+                var msg = messages.poll();
+                if (msg == null) {
+                    break;
+                }
+                uniqueContext.queueMessage(new Message(login, msg));
+            }
         }
     }
 

@@ -4,14 +4,14 @@ import java.nio.ByteBuffer;
 
 public class MessageReader implements Reader<Message> {
     private enum State {
-        DONE, WAITING, ERROR
+        DONE, WAITING_LOGIN, WAITING_MSG, ERROR
     }
 
-    private State state = State.WAITING;
-    // write-mode
-    private final StringReader loginReader = new StringReader();
-    private final StringReader msgReader = new StringReader();
+    private State state = State.WAITING_LOGIN;
+    private final StringReader stringReader = new StringReader();
     private Message message;
+    private String login;
+    private String content;
 
     @Override
     public ProcessStatus process(ByteBuffer buffer) {
@@ -19,19 +19,30 @@ public class MessageReader implements Reader<Message> {
             throw new IllegalStateException();
         }
 
-        var loginStatus = loginReader.process(buffer);
-        if (loginStatus != ProcessStatus.DONE) {
-            return loginStatus;
-        } else {
-            var msgStatus = msgReader.process(buffer);
-            if (msgStatus != ProcessStatus.DONE) {
-                return msgStatus;
+        if (state == State.WAITING_LOGIN) {
+            var status = stringReader.process(buffer);
+            if (status == ProcessStatus.DONE) {
+                state = State.WAITING_MSG;
+                login = stringReader.get();
+                stringReader.reset();
+            } else {
+                return status;
+            }
+        }
+
+        if (state == State.WAITING_MSG) {
+            var status = stringReader.process(buffer);
+            if (status != ProcessStatus.DONE) {
+                return status;
             } else {
                 state = State.DONE;
-                message = new Message(loginReader.get(), msgReader.get());
+                content = stringReader.get();
+                message = new Message(login, content);
                 return ProcessStatus.DONE;
             }
         }
+
+        throw new AssertionError();
     }
 
     @Override
@@ -44,8 +55,7 @@ public class MessageReader implements Reader<Message> {
 
     @Override
     public void reset() {
-        state = State.WAITING;
-        loginReader.reset();
-        msgReader.reset();
+        state = State.WAITING_LOGIN;
+        stringReader.reset();
     }
 }

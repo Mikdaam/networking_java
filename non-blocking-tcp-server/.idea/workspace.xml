@@ -5,10 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="99f3d5a9-21aa-428f-9a2f-533841df4ed9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/utils/IntReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/ClientChat.java" beforeDir="false" afterPath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/ClientChat.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/utils/MessageReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/utils/MessageReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/utils/StringReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/../non-blocking-tcp-client/src/main/java/fr/networks/tcp/nonblocking/utils/StringReader.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/exo5/MessageReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/exo5/MessageReader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/utils/StringReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/networks/tcp_blocking/utils/StringReader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,6 +172,8 @@
       <workItem from="1683113827056" duration="391000" />
       <workItem from="1683115145923" duration="930000" />
       <workItem from="1683702559377" duration="2725000" />
+      <workItem from="1683705625129" duration="286000" />
+      <workItem from="1683706481160" duration="891000" />
     </task>
     <task id="LOCAL-00001" summary="finally finished it">
       <created>1682856484423</created>
@@ -228,16 +231,5 @@
     <MESSAGE value="Neccessary files to finish this lab.&#10;The ServerChat is working, so done." />
     <MESSAGE value="Ok !" />
     <option name="LAST_COMMIT_MESSAGE" value="Ok !" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/test/java/fr/networks/tcp_blocking/StringReaderTest.java</url>
-          <line>59</line>
-          <option name="timeStamp" value="22" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
